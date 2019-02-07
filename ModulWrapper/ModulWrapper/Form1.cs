@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace ModulWrapper
 {
@@ -19,8 +20,14 @@ namespace ModulWrapper
             InitializeComponent();
         }
 
+        Bitmap bmp;
+
         string gui_default_path_text = "Enter the path to the photo and to press Enter key";
         Color gui_default_path_color = Color.Gray;
+
+        string DetectSys = null;
+        string time = null;
+        Stopwatch watch = new Stopwatch();
 
         private void tBox_path_Enter(object sender, EventArgs e)
         {
@@ -50,26 +57,43 @@ namespace ModulWrapper
             }
         }
 
+        [STAThread]
         private void btn_Detect_Click(object sender, EventArgs e)
         {
             using (var yoloWrapper = new YoloWrapper("Yolo-obj.cfg", "yolo-obj_1000.weights", "Anton.names"))
             {
-                var items = yoloWrapper.Detect(@"0.Jpeg");
+                
+                watch.Start();
+                DetectSys = yoloWrapper.DetectionSystem.ToString();
+                var items = yoloWrapper.Detect(ImageToByte(picBox.Image));
                 List<Alturos.Yolo.Model.YoloItem> a = new List<Alturos.Yolo.Model.YoloItem>(items);
 
-                Rectangle ee = new Rectangle(a[1].X, a[1].Y, a[1].Width, a[1].Height);
+                Rectangle ee = new Rectangle(a[0].X, a[0].Y, a[0].Width, a[0].Height);
                 using (Pen pen = new Pen(Color.Red, 2))
                 {
                     Graphics g = picBox.CreateGraphics();
                     g.DrawRectangle(pen, ee);
                 }
+                watch.Stop();
+                time = watch.ElapsedMilliseconds.ToString();
             }
+
+            toolStripDetectionSystem.Text = "Detection System: " + DetectSys;
+            toolStripTimer.Text = "Timer: " + time + " ms";
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             picBox.Image = Image.FromFile(@"D:\_GitHubProjects\TrainCoup_project\ModulWrapper\ModulWrapper\bin\x64\Release\Img\1.jpg");
-            picBox.Image.Save(@"0.Jpeg", ImageFormat.Jpeg);
+
+            toolStripDetectionSystem.Text = "Detection System: n/a";
+            toolStripTimer.Text = "Timer: 0 ms";
+        }
+
+        public static byte[] ImageToByte(Image img)
+        {
+            ImageConverter converter = new ImageConverter();
+            return (byte[])converter.ConvertTo(img, typeof(byte[]));
         }
     }
 
