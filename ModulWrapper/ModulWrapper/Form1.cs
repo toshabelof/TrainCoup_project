@@ -60,7 +60,7 @@ namespace ModulWrapper
         [STAThread]
         private void btn_Detect_Click(object sender, EventArgs e)
         {
-            using (var yoloWrapper = new YoloWrapper("Yolo-obj.cfg", "yolo-obj_1000.weights", "Anton.names"))
+            using (var yoloWrapper = new YoloWrapper("yolov3-obj.cfg", "yolov3-obj_8000.weights", "obj.names"))
             {
                 
                 watch.Start();
@@ -69,10 +69,14 @@ namespace ModulWrapper
                 List<Alturos.Yolo.Model.YoloItem> a = new List<Alturos.Yolo.Model.YoloItem>(items);
 
                 Rectangle ee = new Rectangle(a[0].X, a[0].Y, a[0].Width, a[0].Height);
+                Graphics g = picBox.CreateGraphics();
+                SizeF textSize = g.MeasureString(a[0].Type, new Font("Arial", 16, FontStyle.Regular, GraphicsUnit.Point));
+                Rectangle rectType = new Rectangle(a[0].X, a[0].Y-25, textSize.ToSize().Width, textSize.ToSize().Height);
                 using (Pen pen = new Pen(Color.Red, 2))
                 {
-                    Graphics g = picBox.CreateGraphics();
                     g.DrawRectangle(pen, ee);
+                    g.FillRectangle(Brushes.Red, rectType);
+                    g.DrawString(a[0].Type, new Font("Arial", 16, FontStyle.Regular), Brushes.White, a[0].X, a[0].Y - 25);
                 }
                 watch.Stop();
                 time = watch.ElapsedMilliseconds.ToString();
@@ -84,7 +88,7 @@ namespace ModulWrapper
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            picBox.Image = Image.FromFile(@"D:\_GitHubProjects\TrainCoup_project\ModulWrapper\ModulWrapper\bin\x64\Release\Img\1.jpg");
+            //picBox.Image = Image.FromFile(@"D:\_GitHubProjects\TrainCoup_project\ModulWrapper\ModulWrapper\bin\x64\Release\Img\1.jpg");
 
             toolStripDetectionSystem.Text = "Detection System: n/a";
             toolStripTimer.Text = "Timer: 0 ms";
