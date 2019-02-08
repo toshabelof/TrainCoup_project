@@ -1,0 +1,1 @@
+darknet.exe detector test cfg/obj.data cfg/yolov3-obj.cfg backup/yolov3-obj_8000.weights data/testimg/ocoup5.png
