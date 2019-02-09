@@ -94,7 +94,7 @@ namespace ModulWrapper
                     tBox_path.Text = filePath;
                     try
                     {
-                        // Программа не работает с ЖЫПЕГАМИ потому что костыльное преобразование изображения
+                        // Программа не работает с ПНГШКАМИ потому что костыльное преобразование изображения
                         // (Господи дай канвасы)
                         // Подгружаем первое изображение видео ( первый кадр )
                         var cap = VideoCapture.FromFile(filePath);
@@ -256,7 +256,7 @@ namespace ModulWrapper
         //    return (byte[])converter.ConvertTo(img, typeof(byte[]));
         //}
 
-        // Костыль преобразования картинок, не умеет в ЖЫПЕГ
+        // Костыль преобразования картинок, не умеет в ПНГШКИ
         private static Bitmap MatToBitmap(Mat mat)
         {
             using (var ms = mat.ToMemoryStream())
