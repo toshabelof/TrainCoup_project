@@ -79,11 +79,14 @@ namespace ModulWrapper
                     g.DrawString(a[0].Type, new Font("Arial", 16, FontStyle.Regular), Brushes.White, a[0].X, a[0].Y - 25);
                 }
                 watch.Stop();
+                
                 time = watch.ElapsedMilliseconds.ToString();
             }
 
             toolStripDetectionSystem.Text = "Detection System: " + DetectSys;
             toolStripTimer.Text = "Timer: " + time + " ms";
+
+            watch.Reset(); //fix - обнуление таймера
         }
 
         private void Form1_Load(object sender, EventArgs e)
