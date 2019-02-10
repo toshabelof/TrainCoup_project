@@ -159,7 +159,8 @@ namespace ModulWrapper
         {
             if(neuroThread != null)
             {
-                neuroThread.Resume();
+                if (neuroThread.ThreadState.HasFlag(System.Threading.ThreadState.Suspended))
+                    neuroThread.Resume();
                 neuroThread.Abort();
             }
         }
