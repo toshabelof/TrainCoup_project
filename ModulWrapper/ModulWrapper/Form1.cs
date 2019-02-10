@@ -147,6 +147,14 @@ namespace ModulWrapper
             }
 
         }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if(neuroThread != null)
+            {
+                neuroThread.Abort();
+            }
+        }
     }
 
 }
