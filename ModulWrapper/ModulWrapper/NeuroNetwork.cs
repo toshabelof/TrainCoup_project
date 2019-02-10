@@ -17,18 +17,19 @@ namespace ModulWrapper
     {
 
         // Класс для хранения текущего кадра
-        public class CFrame
+        private class CFrame
         {
             public Mat Frame = new Mat(); // Само изображение в формате OpenCV
             public int frameNum; // Номер кадра
         }
 
-        Thread yoloThread;
-        public YoloWrapper yoloWrapper;
+        private Thread yoloThread;
+        private YoloWrapper yoloWrapper;
         static bool analyzeStarted = false;
-        CFrame cframe = new CFrame();
-        Form1 window;
+        private CFrame cframe = new CFrame();
+        private Form1 window;
         public bool PLAY_FLAG = true;
+        private VideoCapture cap = new VideoCapture();
 
         public NeuroNetwork(Form1 f1)
         {
@@ -45,11 +46,12 @@ namespace ModulWrapper
             watch.Stop();
 
             // Настроечки
-            window.toolStripDetectionSystem.Text = "Detection System: n/a";
-
             var DetectSys = yoloWrapper.DetectionSystem.ToString();
             window.toolStripDetectionSystem.Text = "Detection System: " + DetectSys;
+            window.toolStripTimer.Text = "Yolo loaded in " + watch.ElapsedMilliseconds*1000 + " seconds";
 
+
+            watch = null;
             GC.Collect();
         }
 
@@ -75,15 +77,19 @@ namespace ModulWrapper
             window.picBox.setRect(items);
 
             window.picBox.ImageIpl = newImage; // Рисуем новый кадр
-
            
+
+            st = null;
+            items = null;
+            newImage = null;
+            newFrame = null;
             analyzeStarted = false;
         }
 
         public void StartAnalyzing()
         {
             Utilities.debugmessage("Neuro thread Started");
-            var cap = new VideoCapture();
+            
 
             cap = VideoCapture.FromFile(window.tBox_path.Text);
 
@@ -112,20 +118,27 @@ namespace ModulWrapper
                 {
                     Thread.Sleep(frameTime - (DateTime.Now - timeDelta).Milliseconds);
                     GC.Collect();
+
+                    window.frameCnt.Invoke(new Action(() =>
+                        window.frameCnt.Text = "Frames: " + cframe.frameNum + "/" + cap.FrameCount
+                    ));
+
                     cap.Read(cframe.Frame);
                     cframe.frameNum++;
-
                 }
+
 
             } while (!cframe.Frame.Empty() && PLAY_FLAG);
 
-            // Убиваем последний трэд если остался
-            try
+            if(yoloThread != null)
             {
-                yoloThread.Abort();
+                yoloThread = null;
             }
-            catch { }
-
+            cap.Dispose();
+            cap = null;
+            cframe = null;
+            yoloWrapper.Dispose();
+            yoloWrapper = null;
             Utilities.debugmessage("Neuro thread FINISHED");
             GC.Collect();
         }

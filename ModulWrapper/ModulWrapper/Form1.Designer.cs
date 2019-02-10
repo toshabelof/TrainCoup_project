@@ -39,6 +39,7 @@
             this.picBox = new ModulWrapper.CustomPicBox(this.components);
             this.pauseButton = new System.Windows.Forms.Button();
             this.stopButton = new System.Windows.Forms.Button();
+            this.frameCnt = new System.Windows.Forms.Label();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picBoxSmall)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picBox)).BeginInit();
@@ -139,11 +140,21 @@
             this.stopButton.UseVisualStyleBackColor = true;
             this.stopButton.Click += new System.EventHandler(this.stopButton_Click);
             // 
+            // frameCnt
+            // 
+            this.frameCnt.AutoSize = true;
+            this.frameCnt.Location = new System.Drawing.Point(266, 536);
+            this.frameCnt.Name = "frameCnt";
+            this.frameCnt.Size = new System.Drawing.Size(64, 13);
+            this.frameCnt.TabIndex = 7;
+            this.frameCnt.Text = "Frames: 0/0";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(943, 614);
+            this.Controls.Add(this.frameCnt);
             this.Controls.Add(this.stopButton);
             this.Controls.Add(this.pauseButton);
             this.Controls.Add(this.picBox);
@@ -153,7 +164,8 @@
             this.Controls.Add(this.btn_Detect);
             this.Controls.Add(this.tBox_path);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Train Coup";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
@@ -173,8 +185,9 @@
         public System.Windows.Forms.Button button1;
         public OpenCvSharp.UserInterface.PictureBoxIpl picBoxSmall;
         public CustomPicBox picBox;
-        private System.Windows.Forms.Button pauseButton;
-        private System.Windows.Forms.Button stopButton;
+        public System.Windows.Forms.Button pauseButton;
+        public System.Windows.Forms.Button stopButton;
+        public System.Windows.Forms.Label frameCnt;
     }
 }
 

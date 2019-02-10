@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace ModulWrapper
 {
@@ -16,6 +17,11 @@ namespace ModulWrapper
         public static void debugmessage(string str)
         {
             Console.WriteLine("[YOLOWRAPPER]: " + str);
+        }
+
+        public static void showMsg(string mess, string type)
+        {
+            MessageBox.Show(mess,type,MessageBoxButtons.OK);
         }
 
     }

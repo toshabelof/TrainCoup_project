@@ -41,9 +41,11 @@ namespace ModulWrapper
                     e.Graphics.DrawRectangle(new Pen(Color.Red), new Rectangle(itm.X, itm.Y, itm.Width, itm.Height));
                     e.Graphics.DrawString(itm.Type, fnt, Brushes.White, itm.X, itm.Y - 25);
                 }
-            }catch{ return; }
+            }
+            catch{ }
 
         }
+
 
 
     }
