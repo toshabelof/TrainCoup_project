@@ -30,6 +30,11 @@ namespace ModulWrapper
         Form1 window;
         public bool PLAY_FLAG = true;
 
+        int CoupCount = 0;
+        int[] masTrackDcoup = { };
+        bool vector = false; //для направления
+        bool vectorInRight = false; //для направления - тип слева на право
+
         public NeuroNetwork(Form1 f1)
         {
             this.window = f1;
@@ -69,9 +74,60 @@ namespace ModulWrapper
             List<YoloItem> items = yoloWrapper.Detect(newImage.ToBytes()).ToList();
             st.Stop();
 
-            window.toolStripTimer.Text = "Elapsed time: " + st.ElapsedMilliseconds + " ms";
+            foreach (var l in items)
+            { 
+                if (masTrackDcoup.Length == 0)
+                {
+                    if (l.Type == "dcoup")
+                    {
+                        masTrackDcoup = new int[1] { l.X };
+                        CoupCount++;
+                        //masTrackDcoup.Append(l.Y);
+                    }
+                }
+                else
+                {
+                    if (vector == false) //определяли направление? Нет - определяем
+                    {
+                        if (masTrackDcoup[0] < l.X)
+                        {
+                            vectorInRight = true;
+                            vector = true;
+                        }
+                        else
+                        {
+                            vectorInRight = false;
+                            vector = true;
+                        }
+                       
 
-        
+                    }
+
+                    //если определили, то проверяем координаты
+                    //если новая координата изменилась не больше чем на 30 пикседей, то перезаписываем массив и чекаем дальше
+                    if (vectorInRight == true &&  (l.X - masTrackDcoup[0]) > (0) || vectorInRight == false && (masTrackDcoup[0] - l.X) > (0))
+                    {
+                        masTrackDcoup[0] = l.X;
+                        //masTrackDcoup.Append(l.Y); 
+                    }
+                    else if(vectorInRight == true && (l.X - masTrackDcoup[0]) < (-100) || vectorInRight == false && (masTrackDcoup[0] - l.X) < (-100))
+                    {
+                        masTrackDcoup[0] = l.X;
+                        CoupCount++; //иначе +1 в счётчик
+                    }
+
+                    if (l.Type == "ocoup") //встретили одинарную сцепку вконце
+                    {
+                        CoupCount++; 
+                    }
+                }
+               
+            }
+
+
+            window.toolStripTimer.Text = "Elapsed time: " + st.ElapsedMilliseconds + " ms";
+            window.toolStripCounter.Text = "Counter: " + CoupCount;
+
             window.picBox.setRect(items);
 
             window.picBox.ImageIpl = newImage; // Рисуем новый кадр
@@ -125,6 +181,7 @@ namespace ModulWrapper
                 yoloThread.Abort();
             }
             catch { }
+            yoloWrapper.Dispose();
 
             Utilities.debugmessage("Neuro thread FINISHED");
             GC.Collect();

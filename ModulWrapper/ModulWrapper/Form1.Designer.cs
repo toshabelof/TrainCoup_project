@@ -39,6 +39,7 @@
             this.picBox = new ModulWrapper.CustomPicBox(this.components);
             this.pauseButton = new System.Windows.Forms.Button();
             this.stopButton = new System.Windows.Forms.Button();
+            this.toolStripCounter = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picBoxSmall)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picBox)).BeginInit();
@@ -73,7 +74,8 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripDetectionSystem,
-            this.toolStripTimer});
+            this.toolStripTimer,
+            this.toolStripCounter});
             this.statusStrip1.Location = new System.Drawing.Point(0, 592);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(943, 22);
@@ -139,6 +141,12 @@
             this.stopButton.UseVisualStyleBackColor = true;
             this.stopButton.Click += new System.EventHandler(this.stopButton_Click);
             // 
+            // toolStripCounter
+            // 
+            this.toolStripCounter.Name = "toolStripCounter";
+            this.toolStripCounter.Size = new System.Drawing.Size(95, 17);
+            this.toolStripCounter.Text = "toolStripСounter";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -175,6 +183,7 @@
         public CustomPicBox picBox;
         private System.Windows.Forms.Button pauseButton;
         private System.Windows.Forms.Button stopButton;
+        public System.Windows.Forms.ToolStripStatusLabel toolStripCounter;
     }
 }
 

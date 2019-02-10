@@ -32,6 +32,7 @@ namespace ModulWrapper
         {
             toolStripTimer.Text = "Elapsed time: n/a";
             toolStripDetectionSystem.Text = "Detection System: n/a";
+            toolStripCounter.Text = "Counte: n/a";
         }
 
         // Выбор файла
