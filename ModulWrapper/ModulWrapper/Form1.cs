@@ -32,6 +32,7 @@ namespace ModulWrapper
         {
             toolStripTimer.Text = "Elapsed time: n/a";
             toolStripDetectionSystem.Text = "Detection System: n/a";
+            toolStripCounter.Text = "Count: n/a";
 
             pauseButton.Enabled = false;
         }
@@ -64,12 +65,13 @@ namespace ModulWrapper
                         cap.Read(img);
                         if (neuroThread != null)
                         {
+                            picBox.clearBBoxes();
                             btn_Detect.Enabled = true;
                             pauseButton.Text = "PAUSE";
                             pauseButton.Enabled = false;
                             netw.PLAY_FLAG = false;
                         }
-                        picBox.ImageIpl = img;
+                        picBox.ImageIpl = img.Resize(new OpenCvSharp.Size(picBox.Width, picBox.Height));
 
                         Utilities.debugmessage("File has " + cap.FrameCount + " frames!");
                         frameCnt.Text = "Frames: 0/" + cap.FrameCount;
@@ -107,6 +109,7 @@ namespace ModulWrapper
             }
             if (tBox_path.Text.Length > 0 && tBox_path.Text != "Press 'File' Button")
             {
+                dataGridView1.ScrollBars = ScrollBars.None;
                 btn_Detect.Enabled = false;
                 pauseButton.Text = "PAUSE";
                 pauseButton.Enabled = true;
@@ -123,14 +126,17 @@ namespace ModulWrapper
                 //Utilities.debugmessage("Playing state: " + neuroThread.ThreadState.ToString());
                 if (neuroThread.ThreadState.HasFlag(System.Threading.ThreadState.Suspended))
                 {
+
                     pauseButton.Text = "PAUSE";
                     neuroThread.Resume();
+                    dataGridView1.ScrollBars = ScrollBars.None;
                 }
                 else
                 {
+
                     pauseButton.Text = "RESUME";
                     neuroThread.Suspend();
-
+                    dataGridView1.ScrollBars = ScrollBars.Vertical;
                 }
             }
             catch { }
@@ -144,6 +150,7 @@ namespace ModulWrapper
                 pauseButton.Text = "PAUSE";
                 pauseButton.Enabled = false;
                 netw.PLAY_FLAG = false;
+                dataGridView1.ScrollBars = ScrollBars.Vertical;
             }
 
         }
@@ -152,6 +159,7 @@ namespace ModulWrapper
         {
             if(neuroThread != null)
             {
+                neuroThread.Resume();
                 neuroThread.Abort();
             }
         }

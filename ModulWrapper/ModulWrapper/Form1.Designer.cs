@@ -34,14 +34,22 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripDetectionSystem = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTimer = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripCounter = new System.Windows.Forms.ToolStripStatusLabel();
             this.button1 = new System.Windows.Forms.Button();
             this.picBoxSmall = new OpenCvSharp.UserInterface.PictureBoxIpl();
-            this.picBox = new ModulWrapper.CustomPicBox(this.components);
             this.pauseButton = new System.Windows.Forms.Button();
             this.stopButton = new System.Windows.Forms.Button();
             this.frameCnt = new System.Windows.Forms.Label();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.picBox = new ModulWrapper.CustomPicBox(this.components);
+            this.Frame = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.X1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Y1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.X2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Y2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picBoxSmall)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picBox)).BeginInit();
             this.SuspendLayout();
             // 
@@ -74,7 +82,8 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripDetectionSystem,
-            this.toolStripTimer});
+            this.toolStripTimer,
+            this.toolStripCounter});
             this.statusStrip1.Location = new System.Drawing.Point(0, 592);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(943, 22);
@@ -93,6 +102,12 @@
             this.toolStripTimer.Size = new System.Drawing.Size(83, 17);
             this.toolStripTimer.Text = "toolStripTimer";
             // 
+            // toolStripCounter
+            // 
+            this.toolStripCounter.Name = "toolStripCounter";
+            this.toolStripCounter.Size = new System.Drawing.Size(95, 17);
+            this.toolStripCounter.Text = "toolStripCounter";
+            // 
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -106,19 +121,12 @@
             // 
             // picBoxSmall
             // 
-            this.picBoxSmall.Location = new System.Drawing.Point(658, 44);
+            this.picBoxSmall.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.picBoxSmall.Location = new System.Drawing.Point(658, 41);
             this.picBoxSmall.Name = "picBoxSmall";
-            this.picBoxSmall.Size = new System.Drawing.Size(273, 162);
+            this.picBoxSmall.Size = new System.Drawing.Size(273, 165);
             this.picBoxSmall.TabIndex = 4;
             this.picBoxSmall.TabStop = false;
-            // 
-            // picBox
-            // 
-            this.picBox.Location = new System.Drawing.Point(12, 41);
-            this.picBox.Name = "picBox";
-            this.picBox.Size = new System.Drawing.Size(640, 480);
-            this.picBox.TabIndex = 5;
-            this.picBox.TabStop = false;
             // 
             // pauseButton
             // 
@@ -149,11 +157,72 @@
             this.frameCnt.TabIndex = 7;
             this.frameCnt.Text = "Frames: 0/0";
             // 
+            // dataGridView1
+            // 
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Frame,
+            this.X1,
+            this.Y1,
+            this.X2,
+            this.Y2});
+            this.dataGridView1.EnableHeadersVisualStyles = false;
+            this.dataGridView1.Location = new System.Drawing.Point(658, 212);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.RowHeadersVisible = false;
+            this.dataGridView1.Size = new System.Drawing.Size(273, 309);
+            this.dataGridView1.TabIndex = 8;
+            // 
+            // picBox
+            // 
+            this.picBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.picBox.Location = new System.Drawing.Point(12, 41);
+            this.picBox.Name = "picBox";
+            this.picBox.Size = new System.Drawing.Size(640, 480);
+            this.picBox.TabIndex = 5;
+            this.picBox.TabStop = false;
+            // 
+            // Frame
+            // 
+            this.Frame.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Frame.HeaderText = "Frame";
+            this.Frame.Name = "Frame";
+            this.Frame.ReadOnly = true;
+            // 
+            // X1
+            // 
+            this.X1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.X1.HeaderText = "X1";
+            this.X1.Name = "X1";
+            this.X1.ReadOnly = true;
+            // 
+            // Y1
+            // 
+            this.Y1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Y1.HeaderText = "Y1";
+            this.Y1.Name = "Y1";
+            this.Y1.ReadOnly = true;
+            // 
+            // X2
+            // 
+            this.X2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.X2.HeaderText = "X2";
+            this.X2.Name = "X2";
+            this.X2.ReadOnly = true;
+            // 
+            // Y2
+            // 
+            this.Y2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Y2.HeaderText = "Y2";
+            this.Y2.Name = "Y2";
+            this.Y2.ReadOnly = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(943, 614);
+            this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.frameCnt);
             this.Controls.Add(this.stopButton);
             this.Controls.Add(this.pauseButton);
@@ -171,6 +240,7 @@
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picBoxSmall)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.picBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -189,6 +259,13 @@
         public System.Windows.Forms.Button pauseButton;
         public System.Windows.Forms.Button stopButton;
         public System.Windows.Forms.Label frameCnt;
+        public System.Windows.Forms.ToolStripStatusLabel toolStripCounter;
+        public System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Frame;
+        private System.Windows.Forms.DataGridViewTextBoxColumn X1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Y1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn X2;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Y2;
     }
 }
 

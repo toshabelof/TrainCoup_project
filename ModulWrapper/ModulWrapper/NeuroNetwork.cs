@@ -30,6 +30,12 @@ namespace ModulWrapper
         private Form1 window;
         public bool PLAY_FLAG = true;
         private VideoCapture cap = new VideoCapture();
+        private int w = Utilities.YOLO_DETECTOR_WIDTH, h = Utilities.YOLO_DETECTOR_HEIGHT;
+        int CoupCount = 0;
+        int[] masTrackDcoup = { };
+        private int frameCnt = 0;
+        //bool vector = false; //для направления
+        //bool vectorInRight = false; //для направления - тип слева на право
 
         public NeuroNetwork(Form1 f1)
         {
@@ -48,12 +54,13 @@ namespace ModulWrapper
             // Настроечки
             var DetectSys = yoloWrapper.DetectionSystem.ToString();
             window.toolStripDetectionSystem.Text = "Detection System: " + DetectSys;
-            window.toolStripTimer.Text = "Yolo loaded in " + watch.ElapsedMilliseconds*1000 + " seconds";
+            window.toolStripTimer.Text = "Yolo loaded in " + watch.ElapsedMilliseconds/1000 + " seconds";
 
 
             watch = null;
             GC.Collect();
         }
+
 
         // Функция анализа
         private void AnalyzeVideo()
@@ -65,24 +72,106 @@ namespace ModulWrapper
 
             newFrame = cframe;
             newImage = newFrame.Frame;
-
+            newImage = newImage.CvtColor(ColorConversionCodes.BGR2GRAY);
             var st = new Stopwatch();
             st.Start();
-            List<YoloItem> items = yoloWrapper.Detect(newImage.ToBytes()).ToList();
+            List<YoloItem> items = yoloWrapper.Detect(newImage.Resize(new Size(w, h)).ToBytes()).ToList();
             st.Stop();
 
-            window.toolStripTimer.Text = "Elapsed time: " + st.ElapsedMilliseconds + " ms";
+            var coeffW = ((float)newImage.Width / w);
+            var coeffH = ((float)newImage.Height / h);
+            //foreach (var l in items)
+            //{
+            //    if (masTrackDcoup.Length == 0)
+            //    {
+            //        if (l.Type == "dcoup")
+            //        {
+            //            masTrackDcoup = new int[1] { l.X };
+            //            CoupCount++;
+            //            //masTrackDcoup.Append(l.Y);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        if (vector == false) //определяли направление? Нет - определяем
+            //        {
+            //            if (masTrackDcoup[0] < l.X)
+            //            {
+            //                vectorInRight = true;
+            //                vector = true;
+            //            }
+            //            else
+            //            {
+            //                vectorInRight = false;
+            //                vector = true;
+            //            }
 
-        
+
+            //        }
+
+            //        //если определили, то проверяем координаты
+            //        //если новая координата изменилась не больше чем на 30 пикседей, то перезаписываем массив и чекаем дальше
+            //        if (vectorInRight == true && (l.X - masTrackDcoup[0]) > (0) || vectorInRight == false && (masTrackDcoup[0] - l.X) > (0))
+            //        {
+            //            masTrackDcoup[0] = l.X;
+            //            //masTrackDcoup.Append(l.Y); 
+            //        }
+            //        else if (vectorInRight == true && (l.X - masTrackDcoup[0]) < (-100) || vectorInRight == false && (masTrackDcoup[0] - l.X) < (-100))
+            //        {
+            //            masTrackDcoup[0] = l.X;
+            //            CoupCount++; //иначе +1 в счётчик
+            //        }
+
+            //        //if (l.Type == "ocoup") //встретили одинарную сцепку вконце
+            //        //{
+            //        //    CoupCount++;
+            //        //}
+            //    }
+
+            //}
+
+            foreach (var itm in items)
+            {
+
+                
+                if (itm.Type == "dcoup")
+                {
+                    
+                    string[] _toAdd = { newFrame.frameNum.ToString(), (itm.X * coeffW).ToString(), (itm.Y * coeffH).ToString(), (itm.Width * coeffW + (itm.Y * coeffH)).ToString(), (itm.Height * coeffH + (itm.X * coeffW)).ToString() };
+
+                    if (masTrackDcoup.Length != 0)
+                    {
+                        if (Math.Abs(masTrackDcoup[0] - itm.X) < 50)
+                        {
+                            masTrackDcoup[0] = itm.X;
+                            window.dataGridView1.Invoke(new Action(() => window.dataGridView1.Rows.Add(_toAdd)));
+                        }
+                        else
+                        {
+                            masTrackDcoup[0] = itm.X;
+                            CoupCount++;
+                        }
+                    }
+                    else
+                    {
+                        window.dataGridView1.Invoke(new Action(() => window.dataGridView1.Rows.Add(_toAdd)));
+                        masTrackDcoup = new int[1] { itm.X };
+                        CoupCount++;
+                    }
+                }
+            }
+
+
+            window.toolStripTimer.Text = "Elapsed time: " + st.ElapsedMilliseconds + " ms";
+            window.toolStripCounter.Text = "Count: " + CoupCount;
+
+            window.picBox.ImageIpl = newImage.Resize(new OpenCvSharp.Size(window.picBox.Width, window.picBox.Height)); // Рисуем новый кадр
             window.picBox.setRect(items);
 
-            window.picBox.ImageIpl = newImage; // Рисуем новый кадр
-           
+            if(cframe.frameNum + 1 > frameCnt)
+                PLAY_FLAG = false;
 
-            st = null;
-            items = null;
-            newImage = null;
-            newFrame = null;
+            
             analyzeStarted = false;
         }
 
@@ -98,7 +187,7 @@ namespace ModulWrapper
 
             DateTime timeDelta;
             int frameTime = (int)(1000 / cap.Fps);
-
+            frameCnt = cap.FrameCount;
             do
             {
                 timeDelta = DateTime.Now;
@@ -123,22 +212,24 @@ namespace ModulWrapper
                         window.frameCnt.Text = "Frames: " + cframe.frameNum + "/" + cap.FrameCount
                     ));
 
-                    cap.Read(cframe.Frame);
-                    cframe.frameNum++;
+                    if (cframe.frameNum + 1 < frameCnt)
+                    {
+                        cap.Read(cframe.Frame);
+                        cframe.frameNum++;
+                    }
                 }
-
+              
 
             } while (!cframe.Frame.Empty() && PLAY_FLAG);
 
-            if(yoloThread != null)
-            {
-                yoloThread = null;
-            }
+            window.btn_Detect.Invoke(new Action(() => {
+                window.btn_Detect.Enabled = true;
+                window.pauseButton.Enabled = false;
+                window.dataGridView1.ScrollBars = ScrollBars.Vertical;
+            }));
+            masTrackDcoup = null;
             cap.Dispose();
-            cap = null;
-            cframe = null;
             yoloWrapper.Dispose();
-            yoloWrapper = null;
             Utilities.debugmessage("Neuro thread FINISHED");
             GC.Collect();
         }
