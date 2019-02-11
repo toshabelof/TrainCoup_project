@@ -10,9 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Threading;
+using System.IO;
 
 namespace ModulWrapper
 {
+
     class NeuroNetwork
     {
 
@@ -61,6 +63,18 @@ namespace ModulWrapper
             GC.Collect();
         }
 
+        public void Log(string[] toAdd)
+        {
+            string x = "";
+            using (StreamWriter sw = new StreamWriter("", true, System.Text.Encoding.Default))
+            {
+                for (int i = 1; i < 5; i++)
+                {
+                    x += _toAdd[i] + ' ';
+                }
+                sw.WriteLine(x);
+            }
+        }
 
         // Функция анализа
         private void AnalyzeVideo()
@@ -130,6 +144,8 @@ namespace ModulWrapper
 
             //}
 
+            
+
             foreach (var itm in items)
             {
 
@@ -145,6 +161,7 @@ namespace ModulWrapper
                         {
                             masTrackDcoup[0] = itm.X;
                             window.dataGridView1.Invoke(new Action(() => window.dataGridView1.Rows.Add(_toAdd)));
+                            Log(_toAdd);
                         }
                         else
                         {
@@ -157,6 +174,7 @@ namespace ModulWrapper
                         window.dataGridView1.Invoke(new Action(() => window.dataGridView1.Rows.Add(_toAdd)));
                         masTrackDcoup = new int[1] { itm.X };
                         CoupCount++;
+                        Log(_toAdd);
                     }
                 }
             }
