@@ -25,14 +25,66 @@ namespace ModulWrapper
             InitializeComponent();
         }
 
-        Thread neuroThread; // Пробуем распоточить
+        Thread neuroThread; // Главный поток программы
         NeuroNetwork netw;
+       
+        public YoloWrapper yoloWrapper;
+
+        async private void LoadYolo()
+        {
+            await Task.Run(() => {
+
+                this.Invoke(new Action(() => {
+                    this.Text = "Train Coup - Loading...";
+                    filePickBtn.Enabled = false;
+                    btn_Detect.Enabled = false;
+                    stopButton.Enabled = false;
+                }));
+                
+
+
+                try
+                {
+                    var watch = new Stopwatch();
+                    watch.Start();
+                    yoloWrapper = new YoloWrapper(Utilities.YOLO_CONFIG, Utilities.YOLO_WEIGHTS, Utilities.YOLO_NAMES);
+                    watch.Stop();
+
+
+                    var DetectSys = yoloWrapper.DetectionSystem.ToString();
+                    toolStripDetectionSystem.Text = "Detection System: " + DetectSys;
+                    toolStripTimer.Text = "Yolo loaded in " + watch.ElapsedMilliseconds / 1000.0 + " seconds";
+                }
+                catch(System.IO.FileNotFoundException)
+                {
+                    Utilities.showMsg("Configurations file(s) not found!", "Error!");
+                    this.Invoke(new Action(() => this.Close()));
+                } catch (System.NotSupportedException)
+                {
+                    Utilities.showMsg("Only 64-bit systems are supported!", "Error!");
+                    this.Invoke(new Action(() => this.Close()));
+                }
+
+
+                this.Invoke(new Action(() => {
+                    this.Text = "Train Coup - Ready";
+                    filePickBtn.Enabled = true;
+                    btn_Detect.Enabled = true;
+                    stopButton.Enabled = true;
+                }));
+            });
+        }
 
         public void Form1_Load(object sender, EventArgs e)
         {
+
+            LoadYolo();
+
+            // Настроечки
             toolStripTimer.Text = "Elapsed time: n/a";
             toolStripDetectionSystem.Text = "Detection System: n/a";
             toolStripCounter.Text = "Count: n/a";
+
 
             pauseButton.Enabled = false;
         }
@@ -40,12 +92,14 @@ namespace ModulWrapper
         // Выбор файла
         private void btn_filePick_Click(object sender, EventArgs e)
         {
+            stopButton_Click(sender, e);
+            
             var filePath = string.Empty;
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.InitialDirectory = @"";
                 openFileDialog.FilterIndex = 1;
-                openFileDialog.Filter = "All files (*.*)|*.*";
+                openFileDialog.Filter = ".avi files (*.avi)|*.avi|All files (*.*)|*.*";
                 openFileDialog.RestoreDirectory = true;
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
@@ -63,14 +117,7 @@ namespace ModulWrapper
                         var cap = VideoCapture.FromFile(filePath);
                         var img = new Mat();
                         cap.Read(img);
-                        if (neuroThread != null)
-                        {
-                            picBox.clearBBoxes();
-                            btn_Detect.Enabled = true;
-                            pauseButton.Text = "PAUSE";
-                            pauseButton.Enabled = false;
-                            netw.PLAY_FLAG = false;
-                        }
+                        
                         picBox.ImageIpl = img.Resize(new OpenCvSharp.Size(picBox.Width, picBox.Height));
 
                         Utilities.debugmessage("File has " + cap.FrameCount + " frames!");
@@ -90,13 +137,14 @@ namespace ModulWrapper
 
                 }
                 filePath = null;
+                picBox.clearBBoxes();
                 GC.Collect();
             }
         }
 
         public void NeuroNet()
         {
-            netw = new NeuroNetwork(this);
+            netw = new NeuroNetwork(this, yoloWrapper);
             netw.StartAnalyzing();
         }
         // Запуск нейронки (создание потока в частности)
@@ -121,25 +169,10 @@ namespace ModulWrapper
 
         private void pauseButton_Click(object sender, EventArgs e)
         {
-            try
-            {
-                //Utilities.debugmessage("Playing state: " + neuroThread.ThreadState.ToString());
-                if (neuroThread.ThreadState.HasFlag(System.Threading.ThreadState.Suspended))
-                {
-
-                    pauseButton.Text = "PAUSE";
-                    neuroThread.Resume();
-                    dataGridView1.ScrollBars = ScrollBars.None;
-                }
-                else
-                {
-
-                    pauseButton.Text = "RESUME";
-                    neuroThread.Suspend();
-                    dataGridView1.ScrollBars = ScrollBars.Vertical;
-                }
-            }
-            catch { }
+            /* TO-DO */
+            /*
+             * Реализация паузы
+             */
         }
 
         private void stopButton_Click(object sender, EventArgs e)
@@ -159,8 +192,6 @@ namespace ModulWrapper
         {
             if(neuroThread != null)
             {
-                if (neuroThread.ThreadState.HasFlag(System.Threading.ThreadState.Suspended))
-                    neuroThread.Resume();
                 neuroThread.Abort();
             }
         }

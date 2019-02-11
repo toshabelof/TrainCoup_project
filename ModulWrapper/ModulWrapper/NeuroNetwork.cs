@@ -17,16 +17,16 @@ namespace ModulWrapper
     {
 
         // Класс для хранения текущего кадра
-        private class CFrame
+        public class CFrame
         {
             public Mat Frame = new Mat(); // Само изображение в формате OpenCV
             public int frameNum; // Номер кадра
         }
 
-        private Thread yoloThread;
-        private YoloWrapper yoloWrapper;
+
+        private Task yoloThread;
         static bool analyzeStarted = false;
-        private CFrame cframe = new CFrame();
+        public CFrame cframe = new CFrame();
         private Form1 window;
         public bool PLAY_FLAG = true;
         private VideoCapture cap = new VideoCapture();
@@ -34,30 +34,21 @@ namespace ModulWrapper
         int CoupCount = 0;
         int[] masTrackDcoup = { };
         private int frameCnt = 0;
+        private YoloWrapper yoloWrapper;
+
         //bool vector = false; //для направления
         //bool vectorInRight = false; //для направления - тип слева на право
 
-        public NeuroNetwork(Form1 f1)
+        public NeuroNetwork(Form1 f1, YoloWrapper yolo)
         {
+            this.yoloWrapper = yolo;
             this.window = f1;
             Init();
         }
 
         private void Init()
         {
-            var watch = new Stopwatch();
-
-            watch.Start();
-            yoloWrapper = new YoloWrapper(Utilities.YOLO_CONFIG, Utilities.YOLO_WEIGHTS, Utilities.YOLO_NAMES);
-            watch.Stop();
-
-            // Настроечки
-            var DetectSys = yoloWrapper.DetectionSystem.ToString();
-            window.toolStripDetectionSystem.Text = "Detection System: " + DetectSys;
-            window.toolStripTimer.Text = "Yolo loaded in " + watch.ElapsedMilliseconds/1000 + " seconds";
-
-
-            watch = null;
+            // Deprecated but still here
             GC.Collect();
         }
 
@@ -66,7 +57,6 @@ namespace ModulWrapper
         private void AnalyzeVideo()
         {
 
-            //Utilities.debugmessage("Analyze thread Started");
             var newImage = new Mat();
             var newFrame = new CFrame();
 
@@ -177,8 +167,12 @@ namespace ModulWrapper
 
         public void StartAnalyzing()
         {
-            Utilities.debugmessage("Neuro thread Started");
-            
+            Utilities.debugmessage("Neuro thread STARTED!");
+
+            window.Invoke(new Action(() =>
+            {
+                window.Text = "Train Coup - Processing...";
+            }));
 
             cap = VideoCapture.FromFile(window.tBox_path.Text);
 
@@ -194,14 +188,12 @@ namespace ModulWrapper
                 if (!analyzeStarted)
                 {
                     analyzeStarted = true;
-                    yoloThread = new Thread(AnalyzeVideo);
-                    yoloThread.IsBackground = true;
-                    yoloThread.Start();
+                    yoloThread = Task.Factory.StartNew(AnalyzeVideo, TaskCreationOptions.AttachedToParent);
                 }
 
                 // Отрисовываем кадры нормально (риалтайм)
                 window.picBoxSmall.ImageIpl = cframe.Frame.Resize(new OpenCvSharp.Size(window.picBoxSmall.Width, window.picBoxSmall.Height));
-              
+
                 // Чистим память после каждого кадра, а то насрёт намана так
                 if ((DateTime.Now - timeDelta).Milliseconds < frameTime)
                 {
@@ -218,21 +210,27 @@ namespace ModulWrapper
                         cframe.frameNum++;
                     }
                 }
-              
+
 
             } while (!cframe.Frame.Empty() && PLAY_FLAG);
 
-            window.btn_Detect.Invoke(new Action(() => {
-                window.btn_Detect.Enabled = true;
-                window.pauseButton.Enabled = false;
-                window.dataGridView1.ScrollBars = ScrollBars.Vertical;
-            }));
-            masTrackDcoup = null;
-            cap.Dispose();
-            yoloWrapper.Dispose();
-            Utilities.debugmessage("Neuro thread FINISHED");
+            try
+            {
+                masTrackDcoup = null;
+                cap.Dispose();
+
+                window.Invoke(new Action(() =>
+                {
+                    window.btn_Detect.Enabled = true;
+                    window.pauseButton.Enabled = false;
+                    window.dataGridView1.ScrollBars = ScrollBars.Vertical;
+                    window.Text = "Train Coup - Ready";
+                }));
+                yoloThread.Dispose();
+            }
+            catch { }
+            Utilities.debugmessage("Neuro thread FINISHED!");
             GC.Collect();
         }
-
     }
 }

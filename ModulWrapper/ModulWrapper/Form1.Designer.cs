@@ -35,18 +35,18 @@
             this.toolStripDetectionSystem = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripTimer = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripCounter = new System.Windows.Forms.ToolStripStatusLabel();
-            this.button1 = new System.Windows.Forms.Button();
+            this.filePickBtn = new System.Windows.Forms.Button();
             this.picBoxSmall = new OpenCvSharp.UserInterface.PictureBoxIpl();
             this.pauseButton = new System.Windows.Forms.Button();
             this.stopButton = new System.Windows.Forms.Button();
             this.frameCnt = new System.Windows.Forms.Label();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.picBox = new ModulWrapper.CustomPicBox(this.components);
             this.Frame = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.X1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Y1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.X2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Y2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.picBox = new ModulWrapper.CustomPicBox(this.components);
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picBoxSmall)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
@@ -108,16 +108,16 @@
             this.toolStripCounter.Size = new System.Drawing.Size(95, 17);
             this.toolStripCounter.Text = "toolStripCounter";
             // 
-            // button1
+            // filePickBtn
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(856, 12);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 26);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "File";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.btn_filePick_Click);
+            this.filePickBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.filePickBtn.Location = new System.Drawing.Point(856, 12);
+            this.filePickBtn.Name = "filePickBtn";
+            this.filePickBtn.Size = new System.Drawing.Size(75, 26);
+            this.filePickBtn.TabIndex = 0;
+            this.filePickBtn.Text = "File";
+            this.filePickBtn.UseVisualStyleBackColor = true;
+            this.filePickBtn.Click += new System.EventHandler(this.btn_filePick_Click);
             // 
             // picBoxSmall
             // 
@@ -173,15 +173,6 @@
             this.dataGridView1.Size = new System.Drawing.Size(273, 309);
             this.dataGridView1.TabIndex = 8;
             // 
-            // picBox
-            // 
-            this.picBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.picBox.Location = new System.Drawing.Point(12, 41);
-            this.picBox.Name = "picBox";
-            this.picBox.Size = new System.Drawing.Size(640, 480);
-            this.picBox.TabIndex = 5;
-            this.picBox.TabStop = false;
-            // 
             // Frame
             // 
             this.Frame.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
@@ -217,6 +208,15 @@
             this.Y2.Name = "Y2";
             this.Y2.ReadOnly = true;
             // 
+            // picBox
+            // 
+            this.picBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.picBox.Location = new System.Drawing.Point(12, 41);
+            this.picBox.Name = "picBox";
+            this.picBox.Size = new System.Drawing.Size(640, 480);
+            this.picBox.TabIndex = 5;
+            this.picBox.TabStop = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -229,7 +229,7 @@
             this.Controls.Add(this.picBox);
             this.Controls.Add(this.picBoxSmall);
             this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.filePickBtn);
             this.Controls.Add(this.btn_Detect);
             this.Controls.Add(this.tBox_path);
             this.Name = "Form1";
@@ -253,7 +253,7 @@
         public System.Windows.Forms.StatusStrip statusStrip1;
         public System.Windows.Forms.ToolStripStatusLabel toolStripDetectionSystem;
         public System.Windows.Forms.ToolStripStatusLabel toolStripTimer;
-        public System.Windows.Forms.Button button1;
+        public System.Windows.Forms.Button filePickBtn;
         public OpenCvSharp.UserInterface.PictureBoxIpl picBoxSmall;
         public CustomPicBox picBox;
         public System.Windows.Forms.Button pauseButton;
