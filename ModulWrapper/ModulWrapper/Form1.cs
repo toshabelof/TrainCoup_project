@@ -25,9 +25,11 @@ namespace ModulWrapper
             InitializeComponent();
         }
 
-        Thread neuroThread; // Главный поток программы
+        Task neuroThread; // Главный поток программы
         NeuroNetwork netw;
-       
+        public static int lastFrame = 0;
+        public bool isPaused = false;
+
         public YoloWrapper yoloWrapper;
 
         async private void LoadYolo()
@@ -35,7 +37,7 @@ namespace ModulWrapper
             await Task.Run(() => {
 
                 this.Invoke(new Action(() => {
-                    this.Text = "Train Coup - Loading...";
+                    this.Text = "Train Coup Detector - Loading...";
                     filePickBtn.Enabled = false;
                     btn_Detect.Enabled = false;
                     stopButton.Enabled = false;
@@ -64,10 +66,15 @@ namespace ModulWrapper
                     Utilities.showMsg("Only 64-bit systems are supported!", "Error!");
                     this.Invoke(new Action(() => this.Close()));
                 }
+                catch(Exception e)
+                {
+                    Utilities.showMsg("Unknown unexpected error!\n" + e.ToString(), "Error!");
+                    this.Invoke(new Action(() => this.Close()));
+                }
 
 
                 this.Invoke(new Action(() => {
-                    this.Text = "Train Coup - Ready";
+                    this.Text = "Train Coup Detector - Ready";
                     filePickBtn.Enabled = true;
                     btn_Detect.Enabled = true;
                     stopButton.Enabled = true;
@@ -77,7 +84,10 @@ namespace ModulWrapper
 
         public void Form1_Load(object sender, EventArgs e)
         {
-
+            Utilities.picBoxW = picBox.Width;
+            Utilities.picBoxH = picBox.Height;
+            Utilities.picBoxSmallW = picBoxSmall.Width;
+            Utilities.picBoxSmallH = picBoxSmall.Height;
             LoadYolo();
 
             // Настроечки
@@ -98,7 +108,7 @@ namespace ModulWrapper
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.InitialDirectory = @"";
-                openFileDialog.FilterIndex = 1;
+                openFileDialog.FilterIndex = 2;
                 openFileDialog.Filter = ".avi files (*.avi)|*.avi|All files (*.*)|*.*";
                 openFileDialog.RestoreDirectory = true;
 
@@ -141,11 +151,26 @@ namespace ModulWrapper
                 GC.Collect();
             }
         }
+        // Запуск
+        private void NeuroRun()
+        {
+            if (tBox_path.Text.Length > 0 && tBox_path.Text != "Press 'File' Button")
+            {
+                if (!isPaused)
+                    dataGridView1.Rows.Clear();
+                dataGridView1.ScrollBars = ScrollBars.None;
+                btn_Detect.Enabled = false;
+                pauseButton.Text = "PAUSE";
+                pauseButton.Enabled = true;
+                neuroThread = Task.Factory.StartNew(NeuroNet, TaskCreationOptions.LongRunning);
+            }
+        }
 
+        // Создание класса нейронки
         public void NeuroNet()
         {
             netw = new NeuroNetwork(this, yoloWrapper);
-            netw.StartAnalyzing();
+            netw.StartAnalyzing(lastFrame);
         }
         // Запуск нейронки (создание потока в частности)
         public void btn_Detect_Click(object sender, EventArgs e)
@@ -155,30 +180,32 @@ namespace ModulWrapper
             {
                 netw.PLAY_FLAG = false;
             }
-            if (tBox_path.Text.Length > 0 && tBox_path.Text != "Press 'File' Button")
-            {
-                dataGridView1.ScrollBars = ScrollBars.None;
-                btn_Detect.Enabled = false;
-                pauseButton.Text = "PAUSE";
-                pauseButton.Enabled = true;
-                neuroThread = new Thread(NeuroNet);
-                neuroThread.IsBackground = true;
-                neuroThread.Start();
-            }
+            NeuroRun();
         }
 
         private void pauseButton_Click(object sender, EventArgs e)
         {
-            /* TO-DO */
-            /*
-             * Реализация паузы
-             */
+            if (isPaused)
+            {
+                NeuroRun();
+                isPaused = false;
+            }
+            else
+            {
+                pauseButton.Text = "RESUME";
+                lastFrame = netw.cframe.frameNum;
+                netw.PLAY_FLAG = false;
+                isPaused = true;
+            }
         }
 
         private void stopButton_Click(object sender, EventArgs e)
         {
+            lastFrame = 0;
+            isPaused = false;
             if (neuroThread != null)
             {
+                this.Text = "Train Coup Detector - Ready";
                 btn_Detect.Enabled = true;
                 pauseButton.Text = "PAUSE";
                 pauseButton.Enabled = false;
@@ -190,9 +217,9 @@ namespace ModulWrapper
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if(neuroThread != null)
+            if(neuroThread != null && (neuroThread.Status == TaskStatus.RanToCompletion || neuroThread.Status == TaskStatus.Faulted || neuroThread.Status == TaskStatus.Canceled))
             {
-                neuroThread.Abort();
+                neuroThread.Dispose();
             }
         }
     }
