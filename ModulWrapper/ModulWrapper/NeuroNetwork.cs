@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using System.Windows.Threading;
 using OpenCvSharp.Tracking;
 using System.Drawing;
+using System.IO;
 
 namespace ModulWrapper
 {
@@ -33,19 +34,13 @@ namespace ModulWrapper
         public bool PLAY_FLAG = true;
         private VideoCapture cap = new VideoCapture();
         private int w = Utilities.YOLO_DETECTOR_WIDTH, h = Utilities.YOLO_DETECTOR_HEIGHT;
-        int CoupCount = 0;
+        public int CoupCount = 0;
         int[] masTrackDcoup = { };
         private int frameCnt = 0;
         private YoloWrapper yoloWrapper;
         private static CLAHE clh = Cv2.CreateCLAHE(1.5, new OpenCvSharp.Size(7,7));
+        private static int frameTime;
 
-        // Tracker feature
-        //Tracker tracker;
-        //TrackerKCF tr = TrackerKCF.Create();
-        //Rect2d bb = new Rect2d(0, 0, 0, 0);
-
-        //bool vector = false; //для направления
-        //bool vectorInRight = false; //для направления - тип слева на право
 
         public NeuroNetwork(Form1 f1, YoloWrapper yolo)
         {
@@ -61,6 +56,21 @@ namespace ModulWrapper
         }
 
 
+        public void Log(string[] toAdd)
+        {
+            string x = "";
+            string logFile = @"LOGS\" + Path.GetFileName(window.tBox_path.Text) + ".txt";
+            using (StreamWriter sw = File.AppendText(logFile))
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    x += toAdd[i].Replace(',','.') + ',';
+                }
+                sw.WriteLine(x + toAdd[5]);
+                sw.Close();
+            }
+        }
+
         // Функция анализа
         private void AnalyzeVideo()
         { 
@@ -74,12 +84,11 @@ namespace ModulWrapper
             var st = new Stopwatch();
             st.Start();
             List<YoloItem> items = yoloWrapper.Detect(newImage.Resize(new OpenCvSharp.Size(w, h)).ToBytes()).ToList();
-            st.Stop();
             
 
+            
             var coeffW = ((float)newImage.Width / w);
             var coeffH = ((float)newImage.Height / h);
-
 
             //foreach (var l in items)
             //{
@@ -131,27 +140,45 @@ namespace ModulWrapper
 
             //}
 
-           
-            
             foreach (var itm in items)
             {
-                
-                //tr.Init(newImage, new Rect2d(itm.X, itm.Y, itm.Width, itm.Height));
-                
-                if (itm.Confidence < 0.65) { break; }
+          
+                if (itm.Confidence < 0.66) { break; } // Защищаемся от ложных срабатываний на 95%
                 if (itm.Type == "dcoup")
                 {
-                    
-                    //tr.Update(newImage, new Rect2d(itm.X, itm.Y,itm.Width, itm.Height));
-                    
-                    string[] _toAdd = { newFrame.frameNum.ToString(), (itm.X * coeffW).ToString(), (itm.Y * coeffH).ToString(), (itm.Width * coeffW + (itm.Y * coeffH)).ToString(), (itm.Height * coeffH + (itm.X * coeffW)).ToString() };
+
+                    // Logging, Tracking
+
+                    TimeSpan curTime = TimeSpan.FromMilliseconds(newFrame.frameNum * frameTime);
+                    string[] _toAdd = {
+                        newFrame.frameNum.ToString(),
+                        (itm.X * coeffW).ToString(),
+                        (itm.Y * coeffH).ToString(),
+                        ((itm.Width * coeffW) + (itm.Y * coeffH)).ToString(),
+                        ((itm.Height * coeffH) + (itm.X * coeffW)).ToString(),
+                        curTime.ToString(@"hh\:mm\:ss")
+                    };
+
+                    Log(_toAdd);
+
+                    ListViewItem item1 = new ListViewItem(newFrame.frameNum.ToString(), 0);
+                    item1.SubItems.Add((itm.X * coeffW).ToString());
+                    item1.SubItems.Add((itm.Y * coeffH).ToString());
+                    item1.SubItems.Add((itm.Width * coeffW + (itm.Y * coeffH)).ToString());
+                    item1.SubItems.Add((itm.Height * coeffH + (itm.X * coeffW)).ToString());
+                    item1.SubItems.Add(curTime.ToString(@"hh\:mm\:ss"));
+                   
+                    window.listView1.BeginInvoke(new Action(() =>
+                    {
+                        window.listView1.Items.AddRange(new ListViewItem[] { item1 } ); 
+                    }));
 
                     if (masTrackDcoup.Length != 0)
                     {
                         if (Math.Abs(masTrackDcoup[0] - itm.X) < 100)
                         {
                             masTrackDcoup[0] = itm.X;
-                            window.dataGridView1.Invoke(new Action(() => window.dataGridView1.Rows.Add(_toAdd)));
+                            
                         }
                         else
                         {
@@ -161,20 +188,22 @@ namespace ModulWrapper
                     }
                     else
                     {
-                        window.dataGridView1.Invoke(new Action(() => window.dataGridView1.Rows.Add(_toAdd)));
                         masTrackDcoup = new int[1] { itm.X };
                         CoupCount++;
                     }
+                   
                 }
             }
+            st.Stop();
 
-            
             window.toolStripTimer.Text = "Elapsed time: " + st.ElapsedMilliseconds + " ms";
             window.toolStripCounter.Text = "Count: " + CoupCount;
 
-            window.picBox.ImageIpl = newImage.Resize(new OpenCvSharp.Size(window.picBox.Width, window.picBox.Height)); // Рисуем новый кадр
-            window.picBox.setRect(items);
-            //Utilities.debugmessage("Mean: " + newImage.Mean().ToString());
+            window.picBox.BeginInvoke(new Action(() =>
+            {
+                window.picBox.ImageIpl = newImage.Resize(new OpenCvSharp.Size(window.picBox.Width, window.picBox.Height)); // Рисуем новый кадр
+                window.picBox.setRect(items);
+            }));
             if (cframe.frameNum + 1 > frameCnt)
             {
                 PLAY_FLAG = false;
@@ -185,15 +214,15 @@ namespace ModulWrapper
                 }));
 
             }
-
+            
             analyzeStarted = false;
         }
 
-        public void StartAnalyzing(int frameN)
+        public void StartAnalyzing(int frameN, int cc)
         {
             
             Utilities.debugmessage("Neuro thread STARTED!");
-
+            CoupCount = cc;
             window.Invoke(new Action(() =>
             {
                 window.Text = "Train Coup - Processing...";
@@ -210,7 +239,8 @@ namespace ModulWrapper
            
 
             DateTime timeDelta;
-            int frameTime = (int)(1000 / cap.Fps);
+            frameTime = (int)(1000 / cap.Fps);
+            TimeSpan maxTime = TimeSpan.FromMilliseconds(cap.FrameCount * frameTime);
             frameCnt = cap.FrameCount;
             do
             {
@@ -222,21 +252,22 @@ namespace ModulWrapper
                     yoloThread.IsBackground = true;
                     yoloThread.Start();
                 }
-                
-                // Отрисовываем кадры нормально (риалтайм)
-                window.picBoxSmall.ImageIpl = cframe.Frame.Resize(new OpenCvSharp.Size(window.picBoxSmall.Width, window.picBoxSmall.Height));
-                
+                window.picBoxSmall.BeginInvoke(new Action(() =>
+                {
+                    // Отрисовываем кадры нормально (риалтайм)
+                    window.picBoxSmall.ImageIpl = cframe.Frame.Resize(new OpenCvSharp.Size(window.picBoxSmall.Width, window.picBoxSmall.Height));
+                }));
                 // Чистим память после каждого кадра, а то насрёт намана так
                 if ((DateTime.Now - timeDelta).Milliseconds < frameTime)
                 {
                     Thread.Sleep(frameTime - (DateTime.Now - timeDelta).Milliseconds);
                     GC.Collect();
 
-                    window.frameCnt.Invoke(new Action(() =>
-                        window.frameCnt.Text = "Frames: " + cframe.frameNum + "/" + cap.FrameCount
-                    ));
-                    //tr.Update(cframe.Frame, ref bb);
-                    //Utilities.debugmessage("Track: " + bb.ToString());
+                    window.frameCnt.Invoke(new Action(() => {
+                        TimeSpan curTime = TimeSpan.FromMilliseconds(cframe.frameNum * frameTime);
+                        
+                        window.frameCnt.Text = "Frames: " + cframe.frameNum + "/" + cap.FrameCount + "\nTime: " + curTime.ToString(@"hh\:mm\:ss") + " / " + maxTime.ToString(@"hh\:mm\:ss");
+                    }));
 
                     if (cframe.frameNum + 1 < frameCnt)
                     {
@@ -253,11 +284,15 @@ namespace ModulWrapper
                
                 masTrackDcoup = null;
                 cap.Dispose();
-
+                //window.dataGridView1.BeginInvoke(new Action(() =>
+                //{
+                //    window.dataGridView1.ScrollBars = ScrollBars.Vertical;
+                //    window.dataGridView1.FirstDisplayedScrollingRowIndex = window.dataGridView1.RowCount - 1;
+                //}));
                 window.Invoke(new Action(() =>
                 {
                     
-                    window.dataGridView1.ScrollBars = ScrollBars.Vertical;
+                    
                     if (window.isPaused)
                         window.Text = "Train Coup Detector - Paused";
                     else
