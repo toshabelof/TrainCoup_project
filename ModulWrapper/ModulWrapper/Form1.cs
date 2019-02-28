@@ -153,16 +153,15 @@ namespace ModulWrapper
                         if (!Directory.Exists("LOGS"))
                             Directory.CreateDirectory("LOGS");
 
-                        if (!File.Exists(logFile))
-                            File.Create(logFile);
-                        else
-                            File.Delete(logFile);
-            
-                        using (StreamWriter sw = File.AppendText(logFile))
+
+
+                        using (StreamWriter sw = new StreamWriter(logFile,false,Encoding.UTF8))
                         {
                             sw.WriteLine("frame,x1,y1,x2,y2,time");
                             sw.Close();
                         }
+                        
+                        
                     }
                     catch
                     {
