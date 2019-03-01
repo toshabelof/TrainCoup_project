@@ -36,9 +36,9 @@ namespace ModulWrapper
         int CoupCount = 0;
         int[] masTrackDcoup = { };
         private int frameCnt = 0;
+        //string _Name = window.fName;
         //bool vector = false; //для направления
         //bool vectorInRight = false; //для направления - тип слева на право
-
         public NeuroNetwork(Form1 f1)
         {
             this.window = f1;
@@ -65,12 +65,13 @@ namespace ModulWrapper
 
         public void Log(string[] toAdd)
         {
+            string _logName = window.fName;
             string x = "";
             using (StreamWriter sw = new StreamWriter("", true, System.Text.Encoding.Default))
             {
                 for (int i = 1; i < 5; i++)
                 {
-                    x += _toAdd[i] + ' ';
+                    x += toAdd[i] + ' ';
                 }
                 sw.WriteLine(x);
             }

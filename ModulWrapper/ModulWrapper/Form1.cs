@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Threading;
+using System.IO;
 
 namespace ModulWrapper
 {
@@ -24,10 +25,10 @@ namespace ModulWrapper
         {
             InitializeComponent();
         }
-
+        
         Thread neuroThread; // Пробуем распоточить
         NeuroNetwork netw;
-
+        public string fName;
         public void Form1_Load(object sender, EventArgs e)
         {
             toolStripTimer.Text = "Elapsed time: n/a";
@@ -36,6 +37,8 @@ namespace ModulWrapper
 
             pauseButton.Enabled = false;
         }
+
+        
 
         // Выбор файла
         private void btn_filePick_Click(object sender, EventArgs e)
@@ -52,7 +55,9 @@ namespace ModulWrapper
                 {
                     //Получаем путь
                     filePath = openFileDialog.FileName;
+                    fName = filePath;
                 }
+                
                 if (filePath != "")
                 {
                     
@@ -93,6 +98,8 @@ namespace ModulWrapper
                 GC.Collect();
             }
         }
+        
+        
 
         public void NeuroNet()
         {
