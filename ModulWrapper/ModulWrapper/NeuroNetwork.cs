@@ -4,6 +4,8 @@ using OpenCvSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Data;
+using System.Data.OleDb;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -26,7 +28,8 @@ namespace ModulWrapper
             public int frameNum; // Номер кадра
         }
 
-
+        public static string connectString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=Database31.mdb;";// БД
+        private OleDbConnection myConnection;// БД
         private Thread yoloThread;
         static bool analyzeStarted = false;
         public CFrame cframe = new CFrame();
@@ -42,11 +45,19 @@ namespace ModulWrapper
         private static int frameTime;
 
 
+
         public NeuroNetwork(Form1 f1, YoloWrapper yolo)
         {
             this.yoloWrapper = yolo;
             this.window = f1;
-            Init();
+
+            // создаем экземпляр класса OleDbConnection
+            myConnection = new OleDbConnection(connectString);// БД
+
+            // открываем соединение с БД
+            myConnection.Open();// БД
+
+            Init();// БД
         }
 
         private void Init()
@@ -55,6 +66,26 @@ namespace ModulWrapper
             GC.Collect();
         }
 
+        /*void CopyFile(string sourcefn, string destinfn)//ф-ция копирования файла
+        {
+            FileInfo fn = new FileInfo(sourcefn);
+            fn.CopyTo(destinfn, true);
+        }*/
+
+        /*public void dataBaseLog(string[] toAdd)//База данных// КОД ДЛЯ ЛОГИРОВАНИЯ В БД
+        {
+            string x = "";
+
+
+            string query = "INSERT INTO tableName (X1, Y1, X2, Y2, _Time) VALUES ('" + toAdd[0] + "','" + toAdd[1] + "','" + toAdd[2] + "','" + toAdd[3] + "','" + toAdd[4] +"')";
+
+            // создаем объект OleDbCommand для выполнения запроса к БД MS Access
+            OleDbCommand command = new OleDbCommand(query, myConnection);
+
+            // выполняем запрос к MS Access
+            command.ExecuteNonQuery();
+            
+        }*/
 
         public void Log(string[] toAdd)
         {
