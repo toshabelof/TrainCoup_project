@@ -90,6 +90,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="InJson.cs" />
     <Compile Include="NeuroNetwork.cs" />
     <Compile Include="NeuroNetworkLite.cs" />
     <Compile Include="Program.cs" />

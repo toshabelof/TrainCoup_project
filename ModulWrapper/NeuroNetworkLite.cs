@@ -36,6 +36,7 @@ namespace ModulWrapper
         private int frameCnt = 0;
         //bool vector = false; //для направления
         //bool vectorInRight = false; //для направления - тип слева на право
+        string[] _toAdd;
 
         public NeuroNetworkLite(Form1 f1)
         {
@@ -75,8 +76,8 @@ namespace ModulWrapper
                 if (itm.Type == "dcoup")
                 {
 
-                    string[] _toAdd = { newFrame.frameNum.ToString(), (itm.X * coeffW).ToString(), (itm.Y * coeffH).ToString(), (itm.Width * coeffW + (itm.Y * coeffH)).ToString(), (itm.Height * coeffH + (itm.X * coeffW)).ToString() };
-                    Console.WriteLine(_toAdd[0]);
+                    _toAdd = new string[]{ newFrame.frameNum.ToString(), (itm.X * coeffW).ToString(), (itm.Y * coeffH).ToString(), (itm.Width * coeffW + (itm.Y * coeffH)).ToString(), (itm.Height * coeffH + (itm.X * coeffW)).ToString() };
+                    
                     if (masTrackDcoup.Length != 0)
                     {
                         if (Math.Abs(masTrackDcoup[0] - itm.X) < 50)
@@ -161,6 +162,11 @@ namespace ModulWrapper
 
             Utilities.debugmessage("Neuro thread FINISHED");
             GC.Collect();
+        }
+
+        public string[] getYoloItem()
+        {
+            return _toAdd;
         }
 
     }

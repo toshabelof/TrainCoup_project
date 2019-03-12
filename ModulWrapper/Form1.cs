@@ -34,6 +34,7 @@ namespace ModulWrapper
         int countPhoto = 0;
 
         public bool START_FLAG = false;
+        string[] dataYolo;
 
         public void Form1_Load(object sender, EventArgs e)
         {
@@ -108,9 +109,10 @@ namespace ModulWrapper
         
         public void NeuroNetLite()
         {
-            Console.WriteLine("NeuroNet");
             NeuroNetworkLite netwLite = new NeuroNetworkLite(this);
+
             netwLite.StartAnalyzing();
+            dataYolo = netwLite.getYoloItem();
         }
         // Запуск нейронки (создание потока в частности)
         public void btn_Detect_Click(object sender, EventArgs e)
@@ -216,6 +218,8 @@ namespace ModulWrapper
             progressBar1.Value = 0;
             progressBar1.Maximum = countPhoto;
 
+            int nextPhoto = 0;
+
 
             List<string> listPhotos = new List<string>(treatmentPhotos.getListPhotos());
 
@@ -223,11 +227,8 @@ namespace ModulWrapper
 
             foreach (var item in listPhotos)
             {
-                //while (START_FLAG == true)  { }
-
-                START_FLAG = true;
                 tBox_path.Invoke(new Action(() => tBox_path.Text = item));
-
+                
                 var cap = VideoCapture.FromFile(item);
                 var img = new Mat();
                 cap.Read(img);
@@ -246,10 +247,21 @@ namespace ModulWrapper
                 neuroThread.IsBackground = true;
                 neuroThread.Start();
                 neuroThread.Join();
-                Thread.Sleep(100);
 
+                if (dataYolo != null)
+                {
+                    Console.WriteLine("x = " + dataYolo[1]);
+                    Console.WriteLine("y = " + dataYolo[2]);
+                    Console.WriteLine("w = " + dataYolo[3]);
+                    Console.WriteLine("h = " + dataYolo[4]);
+                }
+
+                InJson json = new InJson();
+                json.CreateJsonFile();
+
+                lblCountPhotos.Invoke(new Action(() => lblCountPhotos.Text = "Обработано: " + ++nextPhoto + "/" + countPhoto));
                 progressBar1.Invoke(new Action(() => progressBar1.Value++));
-                
+
             }
 
             btnStartTreatment.Enabled = true;
