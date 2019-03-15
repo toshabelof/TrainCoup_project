@@ -59,5 +59,26 @@ namespace ModulWrapper.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap _1500068802_196_zagruzka {
+            get {
+                object obj = ResourceManager.GetObject("1500068802_196-zagruzka", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap kisspng_fingerprint_comcast_circle_symbol_technology_tick_5acb37d7297ac2_3455009315232675431699 {
+            get {
+                object obj = ResourceManager.GetObject("kisspng-fingerprint-comcast-circle-symbol-technology-tick-5acb37d7297ac2.34550093" +
+                        "15232675431699", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

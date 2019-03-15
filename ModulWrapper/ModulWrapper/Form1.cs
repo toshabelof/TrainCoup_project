@@ -43,6 +43,8 @@ namespace ModulWrapper
                     filePickBtn.Enabled = false;
                     btn_Detect.Enabled = false;
                     stopButton.Enabled = false;
+                    tBoxTreatmentPath.Enabled = false;
+                    btnTreatment.Enabled = false;
                 }));
                 
 
@@ -80,6 +82,8 @@ namespace ModulWrapper
                     filePickBtn.Enabled = true;
                     btn_Detect.Enabled = true;
                     stopButton.Enabled = true;
+                    tBoxTreatmentPath.Enabled = true;
+                    btnTreatment.Enabled = true;
                 }));
             });
         }
@@ -202,7 +206,7 @@ namespace ModulWrapper
         // Создание класса нейронки
         public void NeuroNet()
         {
-            netw = new NeuroNetwork(this, yoloWrapper);
+            netw = new NeuroNetwork(this, yoloWrapper, null);
             netw.StartAnalyzing(lastFrame, coupCount);
         }
         // Запуск нейронки (создание потока в частности)
@@ -265,6 +269,43 @@ namespace ModulWrapper
             Utilities.picBoxH = picBox.Height;
             Utilities.picBoxSmallW = picBoxSmall.Width;
             Utilities.picBoxSmallH = picBoxSmall.Height;
+        }
+
+        private void btnTreatment_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            List<string> listPhotos = new List<string>();
+
+            string filePath = string.Empty;
+
+            try
+            {
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                {
+                    filePath = folderBrowserDialog.SelectedPath;
+                    tBoxTreatmentPath.Text = filePath;
+
+                    DirectoryInfo dir = new DirectoryInfo(filePath);
+                    foreach (var item in dir.GetFiles())
+                    {
+                        if (Path.GetExtension(item.ToString()) == ".jpg" || Path.GetExtension(item.ToString()) == ".jpeg")
+                        {
+                            listPhotos.Add(dir.FullName + @"\" + item.ToString());
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Utilities.showMsg(ex.ToString(), "Error open folder");
+            }
+
+            if (filePath != string.Empty)
+            {
+                TreatmentPhoto treatmentPhoto = new TreatmentPhoto(this, listPhotos, yoloWrapper);
+                treatmentPhoto.formShow();
+                treatmentPhoto.startTreatment();
+            }
         }
     }
 

@@ -48,6 +48,9 @@
             this.X2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.Y2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.Time = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.label1 = new System.Windows.Forms.Label();
+            this.btnTreatment = new System.Windows.Forms.Button();
+            this.tBoxTreatmentPath = new System.Windows.Forms.TextBox();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.picBoxSmall)).BeginInit();
@@ -227,12 +230,46 @@
             // 
             this.Time.Text = "Time";
             // 
+            // label1
+            // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(647, 502);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(66, 13);
+            this.label1.TabIndex = 11;
+            this.label1.Text = "Select folder";
+            // 
+            // btnTreatment
+            // 
+            this.btnTreatment.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnTreatment.Location = new System.Drawing.Point(1040, 493);
+            this.btnTreatment.Name = "btnTreatment";
+            this.btnTreatment.Size = new System.Drawing.Size(75, 30);
+            this.btnTreatment.TabIndex = 13;
+            this.btnTreatment.Text = "Treatment";
+            this.btnTreatment.UseVisualStyleBackColor = true;
+            this.btnTreatment.Click += new System.EventHandler(this.btnTreatment_Click);
+            // 
+            // tBoxTreatmentPath
+            // 
+            this.tBoxTreatmentPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.tBoxTreatmentPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.tBoxTreatmentPath.Location = new System.Drawing.Point(719, 498);
+            this.tBoxTreatmentPath.Name = "tBoxTreatmentPath";
+            this.tBoxTreatmentPath.Size = new System.Drawing.Size(318, 20);
+            this.tBoxTreatmentPath.TabIndex = 12;
+            this.tBoxTreatmentPath.Text = "Press \'Treatment\' button";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(1128, 562);
+            this.Controls.Add(this.btnTreatment);
+            this.Controls.Add(this.tBoxTreatmentPath);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.picBoxSmall);
             this.Controls.Add(this.frameCnt);
@@ -280,6 +317,9 @@
         private System.Windows.Forms.ColumnHeader Y2;
         public System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.ColumnHeader Time;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button btnTreatment;
+        public System.Windows.Forms.TextBox tBoxTreatmentPath;
     }
 }
 

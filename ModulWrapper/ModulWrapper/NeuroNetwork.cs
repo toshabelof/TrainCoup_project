@@ -1,26 +1,20 @@
-﻿using Alturos.Yolo;
-using Alturos.Yolo.Model;
-using OpenCvSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Data;
 using System.Data.OleDb;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Threading;
-using OpenCvSharp.Tracking;
-using System.Drawing;
 using System.IO;
+using Alturos.Yolo;
+using Alturos.Yolo.Model;
+using OpenCvSharp;
+using ADOX;
 
 namespace ModulWrapper
 {
     class NeuroNetwork
     {
-
         // Класс для хранения текущего кадра
         public class CFrame
         {
@@ -28,8 +22,9 @@ namespace ModulWrapper
             public int frameNum; // Номер кадра
         }
 
-        public static string connectString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=Database31.mdb;";// БД
-        private OleDbConnection myConnection;// БД
+        public static string connectString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=DatabaseNeuro.mdb;";   // БД
+        private OleDbConnection myConnection;
+
         private Thread yoloThread;
         static bool analyzeStarted = false;
         public CFrame cframe = new CFrame();
@@ -43,26 +38,25 @@ namespace ModulWrapper
         private YoloWrapper yoloWrapper;
         private static CLAHE clh = Cv2.CreateCLAHE(1.5, new OpenCvSharp.Size(7,7));
         private static int frameTime;
+        public List<string> listPhotos = new List<string>();
 
 
-
-        public NeuroNetwork(Form1 f1, YoloWrapper yolo)
+        public NeuroNetwork(Form1 f1, YoloWrapper yolo, List<string> listPhotos)
         {
             this.yoloWrapper = yolo;
             this.window = f1;
-
-            // создаем экземпляр класса OleDbConnection
-            myConnection = new OleDbConnection(connectString);// БД
-
-            // открываем соединение с БД
-            myConnection.Open();// БД
-
-            Init();// БД
+            this.listPhotos = listPhotos;
+            this.trPhoto = 0;
+                    
+            Init();
         }
 
         private void Init()
         {
             // Deprecated but still here
+            myConnection = new OleDbConnection(connectString);
+            myConnection.Open();
+
             GC.Collect();
         }
 
@@ -72,12 +66,11 @@ namespace ModulWrapper
             fn.CopyTo(destinfn, true);
         }*/
 
-        /*public void dataBaseLog(string[] toAdd)//База данных// КОД ДЛЯ ЛОГИРОВАНИЯ В БД
+        public void dataBaseLog(string[] toAdd) //База данных// КОД ДЛЯ ЛОГИРОВАНИЯ В БД
         {
             string x = "";
-
-
-            string query = "INSERT INTO tableName (X1, Y1, X2, Y2, _Time) VALUES ('" + toAdd[0] + "','" + toAdd[1] + "','" + toAdd[2] + "','" + toAdd[3] + "','" + toAdd[4] +"')";
+            
+            string query = "INSERT INTO EASY (Frame, X1, Y1, X2, Y2, _TimeRow) VALUES ('" + toAdd[0] + "','" + toAdd[1] + "','" + toAdd[2] + "','" + toAdd[3] + "','" + toAdd[4] + "','" + toAdd[4] + "')";
 
             // создаем объект OleDbCommand для выполнения запроса к БД MS Access
             OleDbCommand command = new OleDbCommand(query, myConnection);
@@ -85,7 +78,7 @@ namespace ModulWrapper
             // выполняем запрос к MS Access
             command.ExecuteNonQuery();
             
-        }*/
+        }
 
         public void Log(string[] toAdd)
         {
@@ -115,8 +108,6 @@ namespace ModulWrapper
             var st = new Stopwatch();
             st.Start();
             List<YoloItem> items = yoloWrapper.Detect(newImage.Resize(new OpenCvSharp.Size(w, h)).ToBytes()).ToList();
-            
-
             
             var coeffW = ((float)newImage.Width / w);
             var coeffH = ((float)newImage.Height / h);
@@ -191,6 +182,15 @@ namespace ModulWrapper
                     };
 
                     Log(_toAdd);
+
+                    if (myConnection.State == System.Data.ConnectionState.Open)
+                    {
+                        try
+                        {
+                            dataBaseLog(_toAdd);
+                        }
+                        catch { }
+                    }
 
                     ListViewItem item1 = new ListViewItem(newFrame.frameNum.ToString(), 0);
                     item1.SubItems.Add((itm.X * coeffW).ToString());
@@ -307,7 +307,6 @@ namespace ModulWrapper
                     }
                 }
 
-
             } while (!cframe.Frame.Empty() && PLAY_FLAG);
             
             try
@@ -333,9 +332,88 @@ namespace ModulWrapper
 
             }
             catch { }
-        
             Utilities.debugmessage("Neuro thread FINISHED!");
             GC.Collect();
+        }
+
+        public int trPhoto = 0;
+        public string nameFile;
+
+
+        public void StartAnalyzingPhotos()
+        {
+            DateTime timeDelta;
+            Utilities.debugmessage("Neuro thread STARTED!");
+
+            foreach (var path in listPhotos)
+            {
+                Console.WriteLine(path);
+                nameFile = path;
+
+                cap = VideoCapture.FromFile(path);
+
+                cap.Read(cframe.Frame);
+                do
+                {
+                    timeDelta = DateTime.Now;
+                    if (!analyzeStarted)
+                    {
+                        analyzeStarted = true;
+                        yoloThread = new Thread(AnalyzePhoto);
+                        yoloThread.IsBackground = true;
+                        yoloThread.Start();
+                    }
+                    if ((DateTime.Now - timeDelta).Milliseconds < frameTime)
+                    {
+                        Thread.Sleep(frameTime - (DateTime.Now - timeDelta).Milliseconds);
+                        GC.Collect();
+                    }
+                }
+                while (!cframe.Frame.Empty() && PLAY_FLAG);
+
+                cap.Dispose();
+                trPhoto++;
+                Utilities.debugmessage("Neuro thread FINISHED!");
+                GC.Collect();
+            }
+        }
+
+        private void AnalyzePhoto()
+        {
+            var newImage = new Mat();
+            var newFrame = new CFrame();
+
+            newFrame = cframe;
+            newImage = newFrame.Frame;
+            newImage = newImage.CvtColor(ColorConversionCodes.BGR2GRAY);
+            clh.Apply(newImage, newImage);
+            
+            List<YoloItem> items = yoloWrapper.Detect(newImage.Resize(new OpenCvSharp.Size(w, h)).ToBytes()).ToList();
+
+            var coeffW = ((float)newImage.Width / w);
+            var coeffH = ((float)newImage.Height / h);
+
+            foreach (var itm in items)
+            {
+                if (itm.Confidence < 0.66) { break; } // Защищаемся от ложных срабатываний на 95%
+
+                float x = ((itm.X * coeffW) + ((itm.Width * coeffW) + (itm.Y * coeffH))) / 2;
+                float y = ((itm.Y * coeffH) + ((itm.Height * coeffH) + (itm.X * coeffW))) / 2;
+
+                float[] center = new float[] { x, y };
+                float width = itm.Width * coeffW;
+                float height = itm.Height * coeffH;
+
+                InJson inJson = new InJson(nameFile, center, width, height, window.tBoxTreatmentPath.Text);
+                inJson.CreateJsonFile();
+            }
+
+            if (cframe.frameNum + 1 > frameCnt)
+            {
+                PLAY_FLAG = false;
+            }
+
+            analyzeStarted = false;
         }
     }
 }

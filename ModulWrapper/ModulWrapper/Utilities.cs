@@ -14,7 +14,7 @@ namespace ModulWrapper
         public static string YOLO_WEIGHTS = "cfg/yolov2-obj_last.weights";
         public static string YOLO_NAMES   = "cfg/obj.names";
         public static int YOLO_DETECTOR_WIDTH   = 416;
-        public static int YOLO_DETECTOR_HEIGHT   = 416;
+        public static int YOLO_DETECTOR_HEIGHT  = 416;
         public static int picBoxW, picBoxH;
         public static int picBoxSmallW, picBoxSmallH;
 
