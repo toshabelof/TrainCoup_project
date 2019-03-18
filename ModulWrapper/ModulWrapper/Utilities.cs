@@ -18,6 +18,7 @@ namespace ModulWrapper
         public static int picBoxW, picBoxH;
         public static int picBoxSmallW, picBoxSmallH;
 
+        public static string[] IMAGE_TYPES = { ".jpg", ".jpeg", ".bmp" };
 
         public static void debugmessage(string str)
         {

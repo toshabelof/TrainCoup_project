@@ -41,9 +41,11 @@ namespace ModulWrapper
 
 
 
-        Task neuroThread; // Главный поток программы
+        Task neuroThread;
         NeuroNetwork netw;
-
+        /// <summary>
+        /// Create and launch analyzing in neuro network
+        /// </summary>
         public void startTreatment()
         {
             neuroThread = Task.Factory.StartNew(NeuroNet, TaskCreationOptions.LongRunning);
@@ -51,19 +53,8 @@ namespace ModulWrapper
 
         public void NeuroNet()
         {
-            int count = 0;
             netw = new NeuroNetwork(GlobalForm, yoloWrapper, listPhotos);
-            Task.Factory.StartNew(netw.StartAnalyzingPhotos, TaskCreationOptions.LongRunning);
-
-
-            while (count != listPhotos.Count)
-            {
-                count = netw.trPhoto;
-                treatmentPhotos.Invoke(new Action(() => {
-                    treatmentPhotos.lblStatus.Text = "Treatment photo...";
-                    treatmentPhotos.lblCount.Text = "Photo: " + count + "/" + countPhotos;
-                }));
-            }
+            netw.StartAnalyzingPhotos(treatmentPhotos);
 
             treatmentPhotos.Invoke(new Action(() => {
                 treatmentPhotos.pictureBox1.Image = Properties.Resources.kisspng_fingerprint_comcast_circle_symbol_technology_tick_5acb37d7297ac2_3455009315232675431699;

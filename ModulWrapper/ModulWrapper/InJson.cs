@@ -116,8 +116,6 @@ namespace ModulWrapper
             string jsonData = JsonConvert.SerializeObject(o);
             File.WriteAllText(path + '/' + name + ".json", JsonConvert.SerializeObject(o));
 
-            Console.WriteLine(jsonData);
-
         }
     }
 }
