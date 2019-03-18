@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Data.OleDb;
+//using System.Data.OleDb;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -9,22 +9,21 @@ using System.IO;
 using Alturos.Yolo;
 using Alturos.Yolo.Model;
 using OpenCvSharp;
-using ADOX;
-using System.Threading.Tasks;
+
 
 namespace ModulWrapper
 {
     class NeuroNetwork
     {
-        // Класс для хранения текущего кадра
+        // Frame class
         public class CFrame
         {
-            public Mat Frame = new Mat(); // Само изображение в формате OpenCV
-            public int frameNum; // Номер кадра
+            public Mat Frame = new Mat(); // Frame in OpenCV format
+            public int frameNum; // Frame number
         }
 
-        public static string connectString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=DatabaseNeuro.mdb;";   // БД
-        private OleDbConnection myConnection;
+        //public static string connectString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=DatabaseNeuro.mdb;";   // БД
+        //private OleDbConnection myConnection;
 
         private Thread yoloThread;
         static bool analyzeStarted = false;
@@ -34,10 +33,13 @@ namespace ModulWrapper
         private VideoCapture cap = new VideoCapture();
         private int w = Utilities.YOLO_DETECTOR_WIDTH, h = Utilities.YOLO_DETECTOR_HEIGHT;
         public int CoupCount = 0;
-        int[] masTrackDcoup = { };
+        public int masTrackDcoup = -999;
         private int frameCnt = 0;
         private YoloWrapper yoloWrapper;
-        private static CLAHE clh = Cv2.CreateCLAHE(1.5, new OpenCvSharp.Size(7, 7));
+        private static CLAHE clhLight = Cv2.CreateCLAHE();
+
+        private static double checkTime = 0;
+
         private static int frameTime;
         public List<string> listPhotos = new List<string>();
 
@@ -55,8 +57,8 @@ namespace ModulWrapper
         private void Init()
         {
 
-            myConnection = new OleDbConnection(connectString);
-            myConnection.Open();
+            //myConnection = new OleDbConnection(connectString);
+            //myConnection.Open();
 
             GC.Collect();
         }
@@ -67,19 +69,18 @@ namespace ModulWrapper
             fn.CopyTo(destinfn, true);
         }*/
 
-        public void dataBaseLog(string[] toAdd) //База данных// КОД ДЛЯ ЛОГИРОВАНИЯ В БД
-        {
-            string x = "";
+        //public void dataBaseLog(string[] toAdd) //База данных// КОД ДЛЯ ЛОГИРОВАНИЯ В БД
+        //{
 
-            string query = "INSERT INTO EASY (Frame, X1, Y1, X2, Y2, _TimeRow) VALUES ('" + toAdd[0] + "','" + toAdd[1] + "','" + toAdd[2] + "','" + toAdd[3] + "','" + toAdd[4] + "','" + toAdd[4] + "')";
+        //    string query = "INSERT INTO GAMEOVER (Frame, X1, Y1, X2, Y2, _TimeRow) VALUES ('" + toAdd[0] + "','" + toAdd[1] + "','" + toAdd[2] + "','" + toAdd[3] + "','" + toAdd[4] + "','" + toAdd[4] + "')";
 
-            // создаем объект OleDbCommand для выполнения запроса к БД MS Access
-            OleDbCommand command = new OleDbCommand(query, myConnection);
+        //    // создаем объект OleDbCommand для выполнения запроса к БД MS Access
+        //    OleDbCommand command = new OleDbCommand(query, myConnection);
 
-            // выполняем запрос к MS Access
-            command.ExecuteNonQuery();
+        //    // выполняем запрос к MS Access
+        //    command.ExecuteNonQuery();
 
-        }
+        //}
 
         public void Log(string[] toAdd)
         {
@@ -107,8 +108,12 @@ namespace ModulWrapper
             newFrame = cframe;
             newImage = newFrame.Frame;
             newImage = newImage.CvtColor(ColorConversionCodes.BGR2GRAY);
-            clh.Apply(newImage, newImage);
+            Utilities.debugmessage("Clahe: " + Cv2.Mean(newImage)[0]);
+            clhLight.SetClipLimit(2);
+            clhLight.Apply(newImage, newImage);
             var st = new Stopwatch();
+
+            Utilities.debugmessage("Clahe: " + Cv2.Mean(newImage)[0]);
             st.Start();
             List<YoloItem> items = yoloWrapper.Detect(newImage.Resize(new OpenCvSharp.Size(w, h)).ToBytes()).ToList();
 
@@ -126,6 +131,7 @@ namespace ModulWrapper
                     // Logging, Tracking
 
                     TimeSpan curTime = TimeSpan.FromMilliseconds(newFrame.frameNum * frameTime);
+                    
                     string[] _toAdd = {
                         newFrame.frameNum.ToString(),
                         (itm.X * coeffW).ToString(),
@@ -137,14 +143,15 @@ namespace ModulWrapper
 
                     Log(_toAdd);
 
-                    if (myConnection.State == System.Data.ConnectionState.Open)
-                    {
-                        try
-                        {
-                            dataBaseLog(_toAdd);
-                        }
-                        catch { }
-                    }
+                   
+                    //if (myConnection.State == System.Data.ConnectionState.Open)
+                    //{
+                    //    try
+                    //    {
+                    //        dataBaseLog(_toAdd);
+                    //    }
+                    //    catch { }
+                    //}
 
                     ListViewItem item1 = new ListViewItem(newFrame.frameNum.ToString(), 0);
                     item1.SubItems.Add((itm.X * coeffW).ToString());
@@ -158,25 +165,28 @@ namespace ModulWrapper
                         window.listView1.Items.AddRange(new ListViewItem[] { item1 });
                     }));
 
-                    if (masTrackDcoup.Length != 0)
+                    // Tracking algorithm
+                    // Speed limit ~80 KM/h (if lenght between coups is 12-15 meters)
+                    if (((newFrame.frameNum * frameTime) > (checkTime + 650)) && Math.Abs((float) masTrackDcoup * coeffW - (float) itm.X * coeffW) < 30)
                     {
-                        if (Math.Abs(masTrackDcoup[0] - itm.X) < 100)
-                        {
-                            masTrackDcoup[0] = itm.X;
-
-                        }
-                        else
-                        {
-                            masTrackDcoup[0] = itm.X;
-                            CoupCount++;
-                        }
+                        checkTime = (newFrame.frameNum * frameTime);
+                        masTrackDcoup = itm.X;
                     }
-                    else
+                    else if (((newFrame.frameNum * frameTime) > (checkTime + 650)))
                     {
-                        masTrackDcoup = new int[1] { itm.X };
                         CoupCount++;
+                        checkTime = (newFrame.frameNum * frameTime);
+                        masTrackDcoup = itm.X;
                     }
-
+                    else if(CoupCount == 0) {
+                        CoupCount++;
+                        checkTime = (newFrame.frameNum * frameTime);
+                        masTrackDcoup = itm.X;
+                    }
+                    else {
+                        checkTime = (newFrame.frameNum * frameTime);
+                        masTrackDcoup = itm.X;
+                    }
                 }
             }
             st.Stop();
@@ -204,11 +214,15 @@ namespace ModulWrapper
             analyzeStarted = false;
         }
 
-        public void StartAnalyzingVideo(int frameN, int cc)
+        public void StartAnalyzingVideo(int frameN, int cc, int coupCoord)
         {
 
             Utilities.debugmessage("Analyze Video Thread STARTED!");
             CoupCount = cc;
+            masTrackDcoup = -999;
+
+            masTrackDcoup = coupCoord;
+
             window.Invoke(new Action(() =>
             {
                 window.Text = "Train Coup - Processing...";
@@ -269,7 +283,7 @@ namespace ModulWrapper
             try
             {
 
-                masTrackDcoup = null;
+                masTrackDcoup = -999;
                 cap.Dispose();
                 window.Invoke(new Action(() =>
                 {
@@ -294,7 +308,7 @@ namespace ModulWrapper
         {
             var photoCount = listPhotos.Count;
             Utilities.debugmessage("Analyze Photo Thread STARTED!");
-            
+
             do
             {
                 if (!analyzePhotoStarted)
@@ -312,7 +326,8 @@ namespace ModulWrapper
                     trPhoto++;
                     GC.Collect();
 
-                    treatmentPhotos.Invoke(new Action(() => {
+                    treatmentPhotos.Invoke(new Action(() =>
+                    {
                         treatmentPhotos.lblStatus.Text = "Treatment photo...";
                         treatmentPhotos.lblCount.Text = "Photo: " + trPhoto + "/" + photoCount;
                     }));
@@ -327,7 +342,10 @@ namespace ModulWrapper
             var newImage = photo;
 
             newImage = newImage.CvtColor(ColorConversionCodes.BGR2GRAY);
-            clh.Apply(newImage, newImage);
+
+
+            clhLight.Apply(newImage, newImage);
+
 
             List<YoloItem> items = yoloWrapper.Detect(newImage.Resize(new OpenCvSharp.Size(w, h)).ToBytes()).ToList();
 

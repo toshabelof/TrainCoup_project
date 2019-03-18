@@ -30,6 +30,7 @@ namespace ModulWrapper
         NeuroNetwork netw; // Network instance
         public static int lastFrame = 0; // Save frame nubmer for pause
         public static int coupCount = 0; // Save coup count nubmer for pause
+        public static int coupCoord = -999; // Save coup coord for pause
         public bool isPaused = false; // Pause flag
 
         public YoloWrapper yoloWrapper;
@@ -201,7 +202,7 @@ namespace ModulWrapper
         public void NeuroNet()
         {
             netw = new NeuroNetwork(this, yoloWrapper, null);
-            netw.StartAnalyzingVideo(lastFrame, coupCount);
+            netw.StartAnalyzingVideo(lastFrame, coupCount, coupCoord);
         }
        
 
@@ -227,6 +228,7 @@ namespace ModulWrapper
                 pauseButton.Text = "RESUME";
                 lastFrame = netw.cframe.frameNum;
                 coupCount = netw.CoupCount;
+                coupCoord = netw.masTrackDcoup;
                 netw.PLAY_FLAG = false;
                 isPaused = true; 
             }
@@ -236,6 +238,7 @@ namespace ModulWrapper
         {
             lastFrame = 0;
             coupCount = 0;
+            coupCoord = -999;
             isPaused = false;
             if (neuroThread != null)
             {

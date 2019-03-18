@@ -257,6 +257,7 @@
             this.tBoxTreatmentPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.tBoxTreatmentPath.Location = new System.Drawing.Point(719, 498);
             this.tBoxTreatmentPath.Name = "tBoxTreatmentPath";
+            this.tBoxTreatmentPath.ReadOnly = true;
             this.tBoxTreatmentPath.Size = new System.Drawing.Size(318, 20);
             this.tBoxTreatmentPath.TabIndex = 12;
             this.tBoxTreatmentPath.Text = "Press \'Treatment\' button";
