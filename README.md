@@ -1,5 +1,5 @@
 # TrainCoup_project
-PRIVET MI TUT NEPONYATNO CHTO DELAEM, KTO VOZMET TOMU BAN
+Best project of detecting :D
 
 ## Install
 1. Скачать/склонировать репозиторий
