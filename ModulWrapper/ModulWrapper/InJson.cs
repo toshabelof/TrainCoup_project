@@ -49,9 +49,9 @@ namespace ModulWrapper
         {
             public MainS Main { get; set; }
 
-            public Alternative Alter { get; set; }
+            public Alternative Alternative { get; set; }
 
-            public EachPoint[] Epoint { get; set; }
+            public EachPoint[] EachPoint { get; set; }
         }
 
         class oldCoup
@@ -78,33 +78,33 @@ namespace ModulWrapper
 
             EachPoint epoint1 = new EachPoint
             {
-                Comment = "top-left (x;y)",
+                Comment = "top-left, (x;y)",
                 Point = new float[] { center[0] - width / 2, center[1] - height / 2 }
             };
 
             EachPoint epoint2 = new EachPoint
             {
-                Comment = "top-right (x;y)",
+                Comment = "top-right, (x;y)",
                 Point = new float[] { center[0] + width / 2, center[1] - height / 2 }
             };
 
             EachPoint epoint3 = new EachPoint
             {
-                Comment = "bottom-left (x;y)",
+                Comment = "bottom-left, (x;y)",
                 Point = new float[] { center[0] - width / 2, center[1] + height / 2 }
             };
 
             EachPoint epoint4 = new EachPoint
             {
-                Comment = "bottom-right (x;y)",
+                Comment = "bottom-right, (x;y)",
                 Point = new float[] { center[0] + width / 2, center[1] + height / 2 }
             };
 
             Region pregion = new Region
             {
                 Main = pmain,
-                Alter = palter,
-                Epoint = new EachPoint[] { epoint1, epoint2, epoint3, epoint4 }
+                Alternative = palter,
+                EachPoint = new EachPoint[] { epoint1, epoint2, epoint4, epoint3 }
             };
 
             oldCoup o = new oldCoup
