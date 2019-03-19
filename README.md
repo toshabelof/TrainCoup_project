@@ -1,7 +1,10 @@
 # TrainCoup_project
 Best project of detecting :D
-
-## Install
+## Install (Первый способ)
+1. Скачать последний релиз v0.5.1.beta 
+2. Установить cuda10 из папки _INSTALLFIRST
+3. Запустить программу
+## Install (Второй способ)
 1. Скачать/склонировать репозиторий
 2. Скомпилировать проект
 3. DatabaseNeuro.mdb перенести в папку ModulWrapper\ModulWrapper\bin\x64\Release
